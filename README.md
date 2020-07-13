@@ -1,5 +1,4 @@
-# urban-garbanzo
-
+# setup
 dev
 
 -clone, cd to upgrade
