@@ -1,35 +1,15 @@
-import os
-import time
-
-
 from flask import Flask
 from flask import jsonify, request, url_for
 
 from celery import Celery
 
-from upgrade_script import verify_target
-from upgrade_script import configure_target
+from pet_scripts import combine_pets
 
 
 app = Flask(__name__)
-app.logger.info('flask initialized')
 
-# export FLASK_ENV=development <- set this too
-# if APP_ENVIRONMENT not set defaults to dev
-APP_ENVIRONMENT = os.getenv('APP_ENVIRONMENT') or 'dev'
-
-if APP_ENVIRONMENT == 'prod':
-    # for later
-    pass
-elif APP_ENVIRONMENT == 'stag':
-    # for later
-    pass
-else:
-    # local dev
-    app.logger.info('starting up local dev environment')
-    
-    app.config['CELERY_BROKER_URL'] = 'redis://localhost:6379/0'
-    app.config['CELERY_RESULT_BACKEND'] = 'redis://localhost:6379/0'
+app.config['CELERY_BROKER_URL'] = 'redis://localhost:6379/0'
+app.config['CELERY_RESULT_BACKEND'] = 'redis://localhost:6379/0'
 
 
 # initialize celery
@@ -41,17 +21,9 @@ app.logger.info('celery initialized')
 # CELERY TASKS
 # ------------
 @celery.task(bind=True)
-def verify_task(self, user_vars):
+def combine_pets(self, user_vars):
     # does the same thing but imported function from somewhere else
-    result = verify_target(self, user_vars)
-
-    return result
-
-
-@celery.task(bind=True)
-def upgrade_task(self, user_vars):
-    # does the same thing but imported function from somewhere else
-    result = configure_target(self, user_vars)
+    result = combine_pets(self, user_vars)
 
     return result
 
@@ -73,20 +45,11 @@ def healthcheck():
     return 'alive'
 
 
-@app.route('/api/verify/', methods=['POST'])
-def verify():
+@app.route('/api/petcombiner/', methods=['POST'])
+def pet_combiner():
     user_vars = request.json
 
-    task = verify_task.delay(user_vars)
-
-    return jsonify({}), 202, {'Location': url_for('results', task_id=task.id)}
-
-
-@app.route('/api/upgrade/', methods=['POST'])
-def upgrade():
-    user_vars = request.json
-
-    task = upgrade_task.delay(user_vars)
+    task = combine_pets.delay(user_vars)
 
     return jsonify({}), 202, {'Location': url_for('results', task_id=task.id)}
 
