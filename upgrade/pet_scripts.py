@@ -3,19 +3,19 @@ import time
 
 
 def combine_pets(celery_task, user_vars):
-    configure_logger = logging.getLogger('urban-garbanzo')
+    pet_logger = logging.getLogger('pet logger')
 
     # useful to reference task from inside task, yo.
-    configure_logger.info('starting job with task id ' + str(celery_task.request.id))
+    pet_logger.info('starting job with task id ' + str(celery_task.request.id))
 
     # log, update task
-    configure_logger.info('working.. 0% complete..')
+    pet_logger.info('working.. 0% complete..')
     celery_task.update_state(state='STARTED', meta={'current': '0%',
                                                     'status': "Starting.."})
 
-    # pretend it takes time to finish
+    #pretend it takes time to finish
     for i in range(20, 101, 20):
-        configure_logger.info('working.. {0}% complete..'.format(str(i)))
+        pet_logger.info('working.. {0}% complete..'.format(str(i)))
         celery_task.update_state(state='PROGRESS', meta={'current': str(i) + '%',
                                                          'status': "cOmPutiNg.."})
         time.sleep(10)
@@ -23,8 +23,10 @@ def combine_pets(celery_task, user_vars):
     # the actual work, combine the pets
     word_result = user_vars['pet 1'] + user_vars['pet 2']
 
-    configure_logger.info('complete, returning result')
+    pet_logger.info('complete, returning result')
     celery_task.update_state(state='SUCCESS', meta={'current': '100%',
-                                                    'status': "Success!"})
+                                                    'status': "Finished!",
+                                                    'result': word_result})
 
-    return word_result
+
+

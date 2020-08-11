@@ -21,7 +21,7 @@ app.logger.info('celery initialized')
 # CELERY TASKS
 # ------------
 @celery.task(bind=True)
-def combine_pets(self, user_vars):
+def combine_task(self, user_vars):
     # does the same thing but imported function from somewhere else
     result = combine_pets(self, user_vars)
 
@@ -49,17 +49,18 @@ def healthcheck():
 def pet_combiner():
     user_vars = request.json
 
-    task = combine_pets.delay(user_vars)
+    task = combine_task.delay(user_vars)
 
     return jsonify({}), 202, {'Location': url_for('results', task_id=task.id)}
 
 
 @app.route('/api/results/<task_id>', methods=['GET'])
 def results(task_id):
-    task = task_results(task_id)
-    response = {'state': task.state, 'status': task.info}
+    task_return = task_results(task_id)
 
-    return response
+    return_dict = {'state': task_return.state, 'status': task_return.info}
+
+    return jsonify(return_dict), 200
 
 
 if __name__ == '__main__':
