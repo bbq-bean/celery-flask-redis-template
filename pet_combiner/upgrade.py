@@ -1,15 +1,22 @@
-from flask import Flask
-from flask import jsonify, request, url_for
+import os
 
 from celery import Celery
+from flask import Flask
+from flask import jsonify, request, url_for
 
 from pet_scripts import combine_pets
 
 
 app = Flask(__name__)
 
+
 app.config['CELERY_BROKER_URL'] = 'redis://localhost:6379/0'
 app.config['CELERY_RESULT_BACKEND'] = 'redis://localhost:6379/0'
+
+# required for docker on mac
+if os.environ.get('env') == "osx_dev":
+    app.config['CELERY_BROKER_URL'] = 'redis://docker.for.mac.localhost:6379/0'
+    app.config['CELERY_RESULT_BACKEND'] = 'redis://docker.for.mac.localhost:6379/0'
 
 
 # initialize celery
