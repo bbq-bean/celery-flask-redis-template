@@ -13,8 +13,8 @@ app = Flask(__name__)
 app.config['CELERY_BROKER_URL'] = 'redis://localhost:6379/0'
 app.config['CELERY_RESULT_BACKEND'] = 'redis://localhost:6379/0'
 
-# required for docker on mac
-if os.environ.get('env') == "osx_dev":
+# required for docker on mac, for the 2 containers to connect redis-server another tab(not in a container)
+if os.environ.get('osx_dev') == "true":
     app.config['CELERY_BROKER_URL'] = 'redis://docker.for.mac.localhost:6379/0'
     app.config['CELERY_RESULT_BACKEND'] = 'redis://docker.for.mac.localhost:6379/0'
 
