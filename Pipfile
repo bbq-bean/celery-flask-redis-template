@@ -11,6 +11,7 @@ jsonify = "*"
 celery = "*"
 flask = "*"
 gunicorn = "*"
+aws-xray-sdk = "*"
 
 [requires]
-python_version = "3.8"
+python_version = "3"

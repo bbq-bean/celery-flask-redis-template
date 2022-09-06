@@ -6,17 +6,28 @@ from flask import jsonify, request, url_for
 
 from pet_scripts import combine_pets
 
+from aws_xray_sdk.core import xray_recorder
+from aws_xray_sdk.ext.flask.middleware import XRayMiddleware
+
 
 app = Flask(__name__)
 
-
-app.config['CELERY_BROKER_URL'] = 'redis://localhost:6379/0'
-app.config['CELERY_RESULT_BACKEND'] = 'redis://localhost:6379/0'
+xray_recorder.configure(service='My application')
+XRayMiddleware(app, xray_recorder)
 
 # required for docker on mac, for the 2 containers to connect redis-server another tab(not in a container)
 if os.environ.get('osx_dev') == "true":
     app.config['CELERY_BROKER_URL'] = 'redis://docker.for.mac.localhost:6379/0'
     app.config['CELERY_RESULT_BACKEND'] = 'redis://docker.for.mac.localhost:6379/0'
+
+# else name the redis container and put all 3 in a new bridged docker network
+elif os.environ.get('local_dev') == "true":
+    app.config['CELERY_BROKER_URL'] = 'redis://redis:6379/0'
+    app.config['CELERY_RESULT_BACKEND'] = 'redis://redis:6379/0'
+    
+else:
+    app.config['CELERY_BROKER_URL'] = 'redis://localhost:6379/0'
+    app.config['CELERY_RESULT_BACKEND'] = 'redis://localhost:6379/0'
 
 
 # initialize celery
